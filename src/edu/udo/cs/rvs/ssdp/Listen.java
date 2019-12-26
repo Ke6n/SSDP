@@ -6,13 +6,13 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Listen implements Runnable  {
-    private final int PORT = 1900;
-    private final String GROUP_IP = "239.255.255.250";
+
 
     private MulticastSocket ms;
-    public static LinkedList<DatagramPacket> dgll = new LinkedList<>();
+    public static final List<DatagramPacket> dgll = new LinkedList<>();
 
     /**
      *  Konstruktor des Listen-Thread.
@@ -21,9 +21,9 @@ public class Listen implements Runnable  {
     public Listen(){
         try {
             // InetAddress Objekt erhalten
-            InetAddress grup = InetAddress.getByName(GROUP_IP);
+            InetAddress grup = InetAddress.getByName(SSDPPeer.GROUP_IP);
             // Ein Multicast auf Port 1900 oeffnen
-            ms = new MulticastSocket(PORT);
+            ms = new MulticastSocket(SSDPPeer.PORT);
             // Multicast-Gruppe beitreten
             ms.joinGroup(grup);
         } catch (IOException e) {
@@ -46,9 +46,6 @@ public class Listen implements Runnable  {
                 ms.receive(dp);
                 // Datagramme in eine Liste aufgenommen werden
                 addPacket(dp);
-            } catch (SocketException e) {
-                // Fehlerbehandlung
-                e.printStackTrace();
             } catch (IOException e) {
                 // Fehlerbehandlung
                 e.printStackTrace();

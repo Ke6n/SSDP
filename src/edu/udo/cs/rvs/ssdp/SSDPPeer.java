@@ -8,6 +8,9 @@ package edu.udo.cs.rvs.ssdp;
  */
 public class SSDPPeer implements Runnable
 {
+    public static final int PORT = 1900;
+    public static final String GROUP_IP = "239.255.255.250";
+
 	public SSDPPeer()
 	{
 
@@ -15,16 +18,16 @@ public class SSDPPeer implements Runnable
 
     @Override
     public void run() {
-        Listen l = new Listen();
-        Worker w = new Worker();
-        User u = new User(l.getMs());
+        Listen listen = new Listen();
+        Worker worker = new Worker();
+        User user = new User(listen.getMs());
 
-        Thread a = new Thread(l);
-        Thread b = new Thread(w);
-        Thread c = new Thread(u);
+        Thread listenThread = new Thread(listen);
+        Thread workerThread = new Thread(worker);
+        Thread userThread = new Thread(user);
 
-        a.start();
-        b.start();
-        c.start();
+        listenThread.start();
+        workerThread.start();
+        userThread.start();
     }
 }

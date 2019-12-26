@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.logging.Logger;
 
 public class Worker implements Runnable {
     private final String UNICAST = "HTTP/1.1 200 OK";
@@ -37,17 +39,16 @@ public class Worker implements Runnable {
 
             }else {
                 //das aelteste Datagramm nehmen und aus der Liste entfernen
-                dp = Listen.dgll.removeFirst();
-                // Ein BufferedReader vorbreiten, um den Inhalt des SSDP-Pakets zeilenweise einzulesen
-                InputStream inputStream = new ByteArrayInputStream(dp.getData());
-                InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(streamReader);
-                try {
+                dp = ((LinkedList<DatagramPacket>)Listen.dgll).removeFirst();
+                try (// Ein BufferedReader vorbreiten, um den Inhalt des SSDP-Pakets zeilenweise einzulesen
+                     InputStream inputStream = new ByteArrayInputStream(dp.getData());
+                     InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                     BufferedReader reader = new BufferedReader(streamReader)){
                     // Wenn der BufferedReader ist vorbreitet, den Inhalt des SSDP-Pakets einlesen.
                     if(reader.ready()){
                         // Die erste Zeile
                         String line = reader.readLine();
-                        // der Typ des Pakets
+                        // Der Typ des Pakets
                         int typ = this.getReplyTyp(line);
                         // Ein Zeile von der Liste des Users
                         UserListLine userListLine = new UserListLine();
@@ -86,9 +87,6 @@ public class Worker implements Runnable {
                             }
                         }
                     }
-                    reader.close();
-                    streamReader.close();
-                    inputStream.close();
                 } catch (IOException e) {
                     // Fehlerbehandlung
                     e.printStackTrace();
@@ -125,9 +123,23 @@ public class Worker implements Runnable {
         else if (line.startsWith(SERV_TYP_NT)) {
             userListLine.setServiceType(line.substring(SERV_TYP_NT.length()));
         }
-        else if (line.startsWith(UUID_USN)) {
-            userListLine.setUuid(line.substring(UUID_USN.length(),UUID_USN.length()+36));
+        else if (line.startsWith(UUID_USN) && (line.length()>=UUID_USN.length()+36)) {
+            System.out.println("this line is "+line);
+            String uuid = line.substring(UUID_USN.length(),UUID_USN.length()+36);
+            if(isUUID(uuid)) {
+                userListLine.setUuid(uuid);
+            }
         }
+    }
+
+    /**
+     *  Zu ueberpruefen, ob der Parameter ein richtiges UUID ist
+     *  @param str ein String, das ein UUID kann
+     *  @return true: UUID; false: kein UUID
+     */
+    public static boolean isUUID(String str) {
+        String regex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+        return str.matches(regex);
     }
 
     /**
@@ -138,7 +150,7 @@ public class Worker implements Runnable {
         synchronized (User.serverList){
             Iterator<UserListLine> it = User.serverList.iterator();
             while(it.hasNext()){
-                if(it.next().equals(uuid)){
+                if(it.next().getUuid().equals(uuid)){
                     it.remove();
                 }
             }

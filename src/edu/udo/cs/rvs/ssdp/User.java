@@ -12,13 +12,11 @@ public class User implements Runnable{
     private final String CMD_CLEAR = "CLEAR";
     private final String CMD_LIST = "LIST";
     private final String CMD_SCAN = "SCAN";
-    private final int PORT = 1900;
-    private final String GROUP_IP = "239.255.255.250";
 
-    public static LinkedList<UserListLine> serverList = new LinkedList<>();
+    public static final List<UserListLine> serverList = new LinkedList<>();
     private MulticastSocket ms;
 
-    // Ein MulticastSocket aus Listen-Thead sollen, um die SCAN-Befehl durchzufueren.
+    // Ein MulticastSocket aus Listen-Thead sollen, um den SCAN-Befehl durchzufueren.
     public User(MulticastSocket ms) {
         this.ms = ms;
     }
@@ -40,7 +38,7 @@ public class User implements Runnable{
                     Thread.sleep(10);
                 } else {
                     String command = reader.readLine();
-                    // Ob die Eingabe eine Befehl ist
+                    // Ob die Eingabe ein Befehl ist
                     if(isCommand(command)) {
                         // EXIT-Befehl: Das Programm sich beenden
                         if(CMD_EXIT.equals(command)){
@@ -61,7 +59,7 @@ public class User implements Runnable{
                     }
                     else {
                         // Behandlung der illegalen Eingabe des Users
-                        System.out.println(command + " ist kein Befehl!");
+                        System.out.println(String.format("%s ist nicht erwartet!", command));
                     }
                 }
             } catch (InterruptedException e) {
@@ -103,16 +101,14 @@ public class User implements Runnable{
      *  Behandlung des SCAN-Befehls: Ueber das MulticastSocket des Listen-Threads eine Suchanfrage versendet werden
      */
     private void scan(){
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(bos,false, StandardCharsets.UTF_8);
-        setPacketData(ps);
-        ps.flush();
-        try {
+        try(ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(bos,false, StandardCharsets.UTF_8)) {
             if (ms != null) {
-                ms.send(new DatagramPacket(bos.toByteArray(), bos.size(), InetAddress.getByName(GROUP_IP), PORT));
+                setPacketData(ps);
+                ps.flush();
+                ms.send(new DatagramPacket(bos.toByteArray(), bos.size(),
+                        InetAddress.getByName(SSDPPeer.GROUP_IP), SSDPPeer.PORT));
             }
-            ps.close();
-            bos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -129,6 +125,6 @@ public class User implements Runnable{
         ps.println("HOST: 239.255.255.250:1900");
         ps.println("MAN: \"ssdp:discover\"");
         ps.println("ST: ssdp:all");
-        ps.println("");
+        ps.println();
     }
 }
