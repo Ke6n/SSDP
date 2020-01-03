@@ -62,10 +62,7 @@ public class User implements Runnable{
                         System.out.println(String.format("%s ist nicht erwartet!", command));
                     }
                 }
-            } catch (InterruptedException e) {
-                // Fehlerbehandlung
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (InterruptedException | IOException e) {
                 // Fehlerbehandlung
                 e.printStackTrace();
             }
@@ -120,8 +117,8 @@ public class User implements Runnable{
     private void setPacketData(PrintStream ps){
         ps.println("M-SEARCH * HTTP/1.1");
         UUID id = UUID.randomUUID();
-        System.out.println("my uuid is: "+id);
-        ps.println("S: uuid:" + id);
+        //System.out.println("my uuid is: "+id);
+        ps.println(String.format("S: uuid:%s", id));
         ps.println("HOST: 239.255.255.250:1900");
         ps.println("MAN: \"ssdp:discover\"");
         ps.println("ST: ssdp:all");

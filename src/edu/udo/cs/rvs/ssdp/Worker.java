@@ -124,7 +124,7 @@ public class Worker implements Runnable {
             userListLine.setServiceType(line.substring(SERV_TYP_NT.length()));
         }
         else if (line.startsWith(UUID_USN) && (line.length()>=UUID_USN.length()+36)) {
-            System.out.println("this line is "+line);
+            //System.out.println("this line is "+line);
             String uuid = line.substring(UUID_USN.length(),UUID_USN.length()+36);
             if(isUUID(uuid)) {
                 userListLine.setUuid(uuid);

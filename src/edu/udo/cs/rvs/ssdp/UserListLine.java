@@ -23,8 +23,11 @@ public class UserListLine {
         this.serviceType = serverType;
     }
 
-    // UUID und Dienst-Typ laut gegebener Form einer bekannte Dienst-List-Zeile umformen
+    /**
+     *  UUID und Dienst-Typ laut gegebener Form einer bekannte Dienst-List-Zeile umformen
+     *  @return eine umgeformt Dienst-List-Zeile
+     */
     public String getUserListStyle(){
-        return uuid + " - " + serviceType;
+        return String.format("%s - %s", uuid, serviceType);
     }
 }
