@@ -5,7 +5,6 @@ import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.logging.Logger;
 
 public class Worker implements Runnable {
     private final String UNICAST = "HTTP/1.1 200 OK";
@@ -68,7 +67,7 @@ public class Worker implements Runnable {
                                     userListLine.setUuid(null);
                                     break;
                                 }
-                                // Beim Uebertragungsfehler auch ignorieren.
+                                // Beim Uebertragungsfehler ignorieren.
                                 else if(!NTS_ALIVE.equals(line.substring(NTS.length()))){
                                     userListLine.setUuid(null);
                                     break;
@@ -80,7 +79,8 @@ public class Worker implements Runnable {
                             }
                         }
                         // Ob UserListLine-Objekt ein richtiges UUID und Dienst-Typ besetzt
-                        if(userListLine.getUuid()!=null && userListLine.getServiceType()!=null){
+                        if(userListLine.getUuid()!=null && userListLine.getServiceType()!=null
+                        && isNotRepeat(userListLine)){
                             synchronized (User.serverList) {
                                 // Jetzte Zeile in der User-Liste aufnehmen
                                 User.serverList.add(userListLine);
@@ -109,6 +109,23 @@ public class Worker implements Runnable {
             typ = 2;
         }
         return typ;
+    }
+
+    /**
+     *  Zu Ueberpruefen, ob die eingelesene Zeile nicht in "serverList" enthaltet ist.
+     *  @param userListLine Eingelesene Zeile
+     *  @return true: Die Zeile ist nicht in "serverList" enthaltet; false: in "serverList" enthaltet
+     */
+    private boolean isNotRepeat(UserListLine userListLine){
+        Iterator<UserListLine> it = User.serverList.iterator();
+        while(it.hasNext()) {
+            UserListLine compareLine = it.next();
+            if(compareLine.getUuid().equals(userListLine.getUuid())
+                    && compareLine.getServiceType().equals(userListLine.getServiceType())){
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
