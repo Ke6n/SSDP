@@ -46,7 +46,9 @@ public class User implements Runnable{
                         }
                         // CLEAR-Befehl: Alle Geräte vergessen werden
                         else if(CMD_CLEAR.equals(command)){
-                            serverList.clear();
+                            synchronized (serverList) {
+                                serverList.clear();
+                            }
                         }
                         // LIST-Befehl: Alle bekannten Geräte gelistet werden
                         else if(CMD_LIST.equals(command)){

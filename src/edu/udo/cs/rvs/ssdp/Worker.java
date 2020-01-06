@@ -38,7 +38,9 @@ public class Worker implements Runnable {
 
             }else {
                 //das aelteste Datagramm nehmen und aus der Liste entfernen
-                dp = ((LinkedList<DatagramPacket>)Listen.dgll).removeFirst();
+                synchronized (Listen.dgll) {
+                    dp = ((LinkedList<DatagramPacket>) Listen.dgll).removeFirst();
+                }
                 try (// Ein BufferedReader vorbreiten, um den Inhalt des SSDP-Pakets zeilenweise einzulesen
                      InputStream inputStream = new ByteArrayInputStream(dp.getData());
                      InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);

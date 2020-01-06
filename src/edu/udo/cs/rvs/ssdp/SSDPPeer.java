@@ -11,11 +11,9 @@ public class SSDPPeer implements Runnable
     public static final int PORT = 1900;
     public static final String GROUP_IP = "239.255.255.250";
 
-	public SSDPPeer()
-	{
-
-	}
-
+    /**
+     *  Threads initialisiern.
+     */
     @Override
     public void run() {
         Listen listen = new Listen();
